@@ -1,0 +1,408 @@
+# Configure jinja2 defaults to make syntax highlighters lives easier
+_templates_suffix: .jinja
+_envops:
+  block_end_string: "%}"
+  block_start_string: "{%"
+  comment_end_string: "#}"
+  comment_start_string: "{#"
+  keep_trailing_newline: true
+  variable_end_string: "}}"
+  variable_start_string: "{{"
+
+# Otras configuraciones de copierç
+_exclude:
+  - /.git
+  - /.github
+  - /.gitmodules
+  - /**.pyc
+  - /**.pyo
+  - /CONTRIBUTING.md
+  - /copier.yml
+  - /COPYING
+  - /docs
+  - /migrations.py
+  - /poetry.lock
+  - /pyproject.toml
+  - /scripts
+  - /tasks_downstream.py
+  - /tests
+  - /vendor
+
+_skip_if_exists:
+  - odoo/custom/dependencies/*.txt
+  - odoo/custom/src/addons.yaml
+  - odoo/custom/src/private/*/
+  - odoo/custom/src/repos.yaml
+  - odoo/custom/ssh/*
+
+_tasks:
+  - invoke develop
+
+_migrations:
+  - version: v0.0.1-0-0
+    after:
+      - - invoke
+        - --search-root={{ _copier_conf.src_path }}
+        - --collection=migrations
+        - de-scaffolding-a-andamio
+  - version: v1.5.2
+    after:
+      - - invoke
+        - --search-root={{ _copier_conf.src_path }}
+        - --collection=migrations
+        - remove-odoo-auto-folder
+  - version: v1.5.3
+    after:
+      - - invoke
+        - --search-root={{ _copier_conf.src_path }}
+        - --collection=migrations
+        - remove-odoo-auto-folder
+
+# Preguntas para el usuario
+project_author:
+  type: str
+  help: >-
+    Dime quien eres.
+
+    Si los módulos privados no incluyen a este autor, pylint le avisará.
+  default: dued
+
+project_name:
+  type: str
+  help: >-
+    ¿Cuál es el nombre de tu proyecto?
+
+    No use puntos o espacios en el nombre; solo "A-Za-z0-9-_" por favor
+  default: miproyecto-odoo
+
+project_license:
+  help: >-
+    Es importante utilizar una buena licencia para su proyecto.
+
+    En https://choosealicense.com/ Puede leer los detalles sobre los FOSS más comunes.
+    En https://www.odoo.com/documentation/user/13.0/legal/licenses/licenses.html usted
+    puede encuentre otras licencias propietarias que admitimos en este andamiaje. ¡Haz
+    una sabia elección!
+
+    Entonces, ¿cuál es la licencia de tu proyecto?
+  default: BSL-1.0
+  choices:
+    No license: null
+    Apache License 2.0: Apache-2.0
+    Boost Software License 1.0: BSL-1.0
+    GNU Affero General Public License (AGPL) 3.0 or later: AGPL-3.0-or-later
+    GNU Library or "Lesser" General Public License (LGPL) 3.0 or later: LGPL-3.0-or-later
+    MIT license: MIT
+    Odoo Enterprise Edition License v1.0: OEEL-1.0
+    Odoo Proprietary License v1.0: OPL-1.0
+
+gitlab_url:
+  type: str
+  help: >-
+    Si aloja este proyecto en Gitlab, ingrese aquí la URL del proyecto.
+
+    No debe tener una barra inclinada final.
+
+    💡 Si no usa Gitlab, deje esto vacío e ignore todas las demás preguntas de Gitlab.
+
+    Ejemplo: `https://gitlab.com/dued/tu-proyecto-dued`.
+
+domain_prod:
+  type: str
+  help: >-
+    Escriba el dominio de producción principal para este proyecto. Solo el dominio,
+    ningún protocolo o cosas así.
+
+    Ejemplo: www.ejemplo.com
+
+domain_prod_alternatives:
+  help: >-
+    Escriba una lista de dominios alternativos que deberían producir una redirección 301
+    al dominio principal.
+
+    Ejemplo: [ejemplo.com, www.ejemplo.org, ejemplo.org]
+
+domain_test:
+  type: str
+  help: >-
+    Escriba el dominio de prueba para este proyecto. Solo el dominio, ningún protocolo o
+    cosas así.
+
+    Ejemplo: demo.ejemplo.com
+
+paths_without_crawlers:
+  default:
+    - /web
+    - /website/info
+  help: >-
+    Cuéntame la lista de caminos donde quieres prohibir los rastreadores.
+
+    Imagine que no desea que sus páginas `/shop` y `/shop/**` sean indexadas. Luego pon
+    aquí `[/shop]`.
+
+    ⚠️ Debe ser una lista. Y esto solo es compatible si implementa con Traefik.
+
+    💡 Vamos a convertir esto a las reglas de 'Ruta'. Verifique la sintaxis válida en
+    https://docs.traefik.io/routing/routers/#rule
+
+cidr_whitelist:
+  default: null
+  help: >-
+    Si necesita incluir en la lista blanca ciertos CIDR para permitir que solo ellos
+    accedan a su instancia de dued; configúrelo aquí, por favor.
+
+    ⚠️ Debe ser una lista. Y esto solo es compatible si implementa con Traefik 2+.
+
+odoo_version:
+  help: ¿En qué versión de odoo se basa?
+  type: float
+  default: 13.0
+  choices:
+    - 7.0
+    - 8.0
+    - 9.0
+    - 10.0
+    - 11.0
+    - 12.0
+    - 13.0
+
+odoo_initial_lang:
+  default: es_PE
+  type: str
+  help: >-
+    Si desea inicializar Odoo automáticamente en un idioma específico, escríbalo aquí.
+    El formato debe ser ll_CC donde ll es el código de idioma y CC es el código del
+    país.
+
+    Ejemplos: en_US, es_ES, es_VE ...
+
+odoo_oci_image:
+  type: str
+  help: >-
+    Si está utilizando un regitry de imágenes OCI/Docker (como el registry Docker Hub,
+    Quay o Gitlab) para publicar las imágenes Odoo que se construirán con este proyecto,
+    especifique aquí la ruta a la imagen dued construida con él. Déjelo vacío si no
+    estas utilizando un registro.
+
+    Ejemplo: docker.io/miequipo/ejemplo-odoo
+
+odoo_listdb:
+  default: false
+  type: bool
+  help: >-
+    ¿Quieres listar bases de datos públicamente?
+
+odoo_admin_password:
+  secret: true
+  default: ejemplo-admin-password
+  type: str
+  help: >-
+    💡 Para generar automáticamente contraseñas seguras, vea
+    https://ddg.gg/?q=password+64+strong
+
+    ⚠️ Esta contraseña es crítica para la seguridad, especialmente si ha establecido
+    odoo_listdb
+     en verdadero, así que manténgalo a salvo.
+
+    ¿Cuál será su contraseña de administrador de odoo?
+
+odoo_dbfilter:
+  default: ".*"
+  type: str
+  help: >-
+    Configure su filtro de base de datos Odoo. Debe ser una expresión regular que
+    coincida con el nombre de dominio que se visita. Es útil si usa Odoo en modo SaaS.
+
+odoo_proxy:
+  default: traefik
+  choices:
+    No proxy (Peligroso para producción): null
+    Traefik: traefik
+    Otro proxy (¡tu decides!): other
+  help: >-
+    ⚠️ El uso de un proxy mal configurado para la producción puede crear un agujero de
+    seguridad. No usar un proxy puede crear problemas de rendimiento.
+
+    ¿Qué proxy usará para implementar odoo?
+
+postgres_version:
+  default: 12
+  help: >-
+    ¿Qué versión de PostgreSQL desea implementar?
+  choices:
+    Usaré un servidor PostgreSQL externo: null
+    "9.6": 9.6
+    "10": 10
+    "11": 11
+    "12": 12
+
+postgres_username:
+  type: str
+  default: odoo
+  help: >-
+    ¿Qué nombre de usuario se usará para conectarse al servidor postgres?
+
+postgres_dbname:
+  type: str
+  default: prod
+  help: >-
+    💡 Si los nombres de las bases de datos difieren entre entornos, las operaciones
+    como restaurar una base de datos desde un entorno extraño serán más difíciles de
+    mantener, pero pueden proporcionar seguridad adicional. Tu decides. Por defecto,
+    "prod" por razones históricas.
+
+    ¿Cuál será el nombre de la base de datos principal?
+
+postgres_password:
+  secret: true
+  default: ejemplo-db-password
+  type: str
+  help: >-
+    ¿Cuál será su contraseña de usuario de Postgres?
+
+smtp_default_from:
+  type: str
+  help: >-
+    Ahora, comencemos a configurar el correo saliente.
+
+    En caso de que un correo electrónico que sale de odoo no tenga una dirección de
+    encabezado `De:` válida, ¿qué dirección debería ser la predeterminada que envía el
+    correo electrónico?
+
+smtp_relay_host:
+  type: str
+  help: >-
+    ⚠️ Si deja esta respuesta vacía, se ignorarán todas las configuraciones SMTP
+    siguientes.
+
+    Si proporciona un host SMTP válido, Odoo de producción podrá enviar correos
+    electrónicos sin necesidad de configurar ningún registro `ir.mail_server`, porque
+    Andamio lo configurará para usar un relé de correo que gestionará una cola de correo
+    local antes de enviarlo al punto final SMTP real (guardar sus correos de malas
+    condiciones de red). El mismo relé se usará para enviar informes de respaldo.
+
+    Entonces, ¿cuál es su host SMTP?
+
+    Ejemplo: mail.ejemplo.com
+
+smtp_relay_port:
+  type: int
+  default: 587
+  help: >-
+    Indique el puerto para conectarse en el servidor SMTP que acaba de definir.
+
+    ⚠️ NUNCA use el puerto 465 👉 https://github.com/tomav/docker-mailserver/issues/1428
+
+smtp_relay_user:
+  type: str
+  help: >-
+    Indique al usuario que se conectará en el servidor SMTP que acaba de definir.
+
+    Para que Odoo funcione bien, este usuario debe poder hacer spoofing de correo
+    electrónico.
+
+smtp_relay_password:
+  secret: true
+  type: str
+  default: ejemplo-smtp-password
+  help: >-
+    ¿Cuál es su contraseña SMTP?
+
+smtp_canonical_default:
+  type: str
+  help: >-
+    Por lo general, si envía correos como "usuario@ejemplo.com", el dominio canónico
+    sería "ejemplo.com".
+
+    Este dominio canónico debe tener la configuración correcta de SPF, DKIM y DMARC que
+    permita al host SMTP enviar correos en su nombre.
+
+    Cuando Odoo intenta enviar un correo que no proviene de un dominio canónico, el
+    dominio que indique aquí se usará al reescribir la dirección con SRS
+    (https://en.wikipedia.org/wiki/SRS).
+
+    ¿Cuál es tu dominio canónico?
+
+smtp_canonical_domains:
+  help: >-
+    Proporcione una lista de otros dominios autorizados para enviar correos electrónicos
+    desde esta instancia de Odoo y el host SMTP. No se verán afectados por SRS. También
+    deben tener configuraciones válidas de SPF, DKIM y DMARC.
+
+    No necesita repetir el dominio canónico que indicó anteriormente.
+
+    Ejemplo: [ejemplomail.com, ejemplo.org]
+
+backup_dst:
+  type: str
+  help: >-
+    Si desea utilizar un bucket de Amazon S3, escriba su URL como
+    `s3://s3.amazonaws.com/ejemplo-bucket/ejemplo/path` para asegurarse de que funcione
+    bien.
+
+    Si desea utilizar cualquier otro backend, proporcione cualquier URL compatible con
+    Duplicity (nuestro motor de copia de seguridad elegido; lea
+    http://duplicity.nongnu.org/vers8/duplicity.1.html#sect7 para esos formatos de URL).
+
+    Si no desea copias de seguridad, deje esto vacío.
+
+    ¿Dónde deben almacenarse las copias de seguridad?
+
+backup_email_from:
+  type: str
+  help: >-
+    El contenedor de respaldo enviará informes por correo electrónico si el relé SMTP
+    está configurado correctamente.
+
+    ¿Qué dirección de correo electrónico debe usar para enviarlos?
+
+backup_email_to:
+  type: str
+  help: >-
+    ¿Dónde enviar esos informes de respaldo?
+
+backup_deletion:
+  type: bool
+  help: >-
+    Si está utilizando S3, probablemente desee eliminar las copias de seguridad
+    desactualizadas utilizando las reglas del ciclo de vida del depósito (bucket). Si
+    usa otro backend de almacenamiento, entonces probablemente desee habilitar la
+    eliminación de copias de seguridad desactualizadas utilizando la propia duplicidad.
+
+    Entonces, ¿desea habilitar la eliminación de copias de seguridad de duplicidad a
+    través de cron?
+
+backup_tz:
+  type: str
+  default: UTC
+  help: >-
+    Establezca la zona horaria utilizada por el cron de respaldo para los informes.
+
+    Visite https://www.cyberciti.biz/faq/linux-unix-set-tz-environment-variable/ para
+    saber cómo obtener un valor válido para esta variable.
+
+backup_aws_access_key_id:
+  secret: true
+  type: str
+  default: null
+  help: >-
+    Si está utilizando AWS S3 para almacenar copias de seguridad, proporcione aquí su ID
+    de clave de acceso.
+
+backup_aws_secret_access_key:
+  secret: true
+  type: str
+  default: null
+  help: >-
+    Si está utilizando AWS S3 para almacenar copias de seguridad, proporcione aquí su
+    clave de acceso secreta.
+
+backup_passphrase:
+  secret: true
+  type: str
+  default: ejemplo-frase-de-backup
+  help: >-
+    ⚠️ Esta frase de contraseña es crítica para la seguridad, así que manténgala segura.
+    Lo necesitará para restaurar las copias de seguridad.
+
+    ¿Cuál será su frase de contraseña de respaldo?

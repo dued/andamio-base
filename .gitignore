@@ -1,0 +1,30 @@
+# Ignorar todos los directorios src excepto los privados y los archivos con un punto
+/odoo/auto
+/odoo/custom/src/*/
+!/odoo/custom/src/private/
+
+# Ignore docker-compose.yml por default, para permitir valores
+# predeterminados fáciles por clon
+/docker-compose.yml
+
+# Formatos compilados, caché, archivos temporales, basura git
+**.~
+**.mo
+**.py[co]
+**.egg-info
+**.orig
+
+# Archivos y configuraciones de desarrollo específicos del usuario o específicos del editor
+!/.vscode/*.jinja
+!/.vscode/extensions.json
+!/.vscode/launch.json
+!/.vscode/settings.json
+!/.vscode/tasks.json
+.vscode/*
+/odoo/custom/src/private/.vscode/*
+/.venv
+/andamio.*.code-workspace
+/src
+
+# Configuraciones de docker específicas del proyecto
+/.docker/

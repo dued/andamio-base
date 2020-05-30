@@ -1,0 +1,3 @@
+[submodule "vendor/maintainer-quality-tools"]
+	path = vendor/maintainer-quality-tools
+	url = https://github.com/OCA/maintainer-quality-tools.git
